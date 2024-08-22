@@ -1,0 +1,65 @@
+networks:
+ todoapi-network:
+  driver: bridge
+services:
+  todo.api:    
+    container_name: Todo.Api_Development
+    image: ${DOCKER_REGISTRY-}todoapi
+    build:
+      context: .
+      dockerfile: Todo.Api/Dockerfile
+    env_file: .env
+    environment:
+     ASPNETCORE_URLS: http://*:8080
+     ASPNETCORE_ENVIRONMENT: Development
+     ASPNETCORE_HTTP_PORTS: 8080
+    networks:
+        - todoapi-network
+  db:
+      image: postgres:latest
+      container_name: postgres_db
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=1234
+        - POSTGRES_DB=postgres
+      ports:
+        - "5432:5432"
+      restart: always
+      expose:
+       - 5432
+      networks:
+        - todoapi-network
+      volumes:
+        - post_data:/var/lib/postgresql/data/ 
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
+    restart: always
+    ports:
+      - "8880:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: kumar.vishal@thinksys.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    networks:
+      - todoapi-network
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+  sql_server:
+    image: mcr.microsoft.com/mssql/server
+    container_name: sql_server_container
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Password_123#
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/lib/mssql/data/
+    restart: always
+    networks:
+      - todoapi-network
+
+ 
+volumes:
+  post_data:
+  pgadmin-data:
+  sql_data:  
